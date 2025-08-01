@@ -17,13 +17,19 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 from aiohttp import web
 
 # --- Конфигурация ---
-API_TOKEN = os.getenv("API_TOKEN", "PUT-YOUR-TOKEN-HERE")
+API_TOKEN = os.getenv("API_TOKEN")
+if not API_TOKEN:
+    raise ValueError("Не указан API_TOKEN в переменных окружения")
+
 DB_PATH = "db.sqlite3"
 IMAGES_DIR = Path("images")
 WEBHOOK_PATH = "/webhook"
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Например: https://yourdomain.com/webhook
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 WEB_SERVER_HOST = "0.0.0.0"
 WEB_SERVER_PORT = int(os.getenv("PORT", 8000))
+
+if not WEBHOOK_URL:
+    raise ValueError("Не указан WEBHOOK_URL в переменных окружения")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -178,13 +184,8 @@ USDT | BTC | XMR | Карта України
     }
 }
 
-# --- Изображения ---
-images = {
-    "Зняти з Розшуку": IMAGES_DIR / "rozshuk.jpg",
-    "Бронювання": IMAGES_DIR / "bron.jpg",
-    "Виїзд за кордон": IMAGES_DIR / "vyezd.jpg",
-    "СЗЧ/Коміс": IMAGES_DIR / "szch.jpg",
-}
+# Создаем директорию для изображений, если ее нет
+IMAGES_DIR.mkdir(exist_ok=True)
 
 # --- Обработчики ---
 @dp.message(Command("start"))
@@ -203,31 +204,28 @@ async def after_captcha(message: types.Message):
 
 async def send_service_info(message: types.Message, service_name: str):
     service = service_texts[service_name]
-    photo_path = images[service_name]
+    photo_path = IMAGES_DIR / service["image"]
     
-    # Отправляем текст сразу
-    text_message = await message.answer(
+    # Отправляем текст
+    await message.answer(
         service["text"],
         parse_mode="HTML",
         disable_web_page_preview=True
     )
     
+    # Отправляем фото, если оно существует
     if photo_path.exists():
         try:
-            # Отправляем фото
             photo = FSInputFile(photo_path)
-            sent_photo = await message.answer_photo(
+            await message.answer_photo(
                 photo, 
                 caption="🔍 Детальна інформація вище 👆",
                 parse_mode="HTML"
             )
-            
-            # Удаляем фото через 7 секунд
-            await asyncio.sleep(7)
-            await bot.delete_message(chat_id=message.chat.id, message_id=sent_photo.message_id)
-            
         except Exception as e:
-            logging.error(f"Error sending photo for {service_name}: {e}")
+            logger.error(f"Error sending photo: {e}")
+    else:
+        logger.warning(f"Image not found: {photo_path}")
     
     # Отправляем кнопку консультации
     consultation_button = InlineKeyboardMarkup(
@@ -269,14 +267,30 @@ async def init_db():
 
 # --- Webhook настройки ---
 async def on_startup(bot: Bot) -> None:
-    await bot.set_webhook(f"{WEBHOOK_URL}{WEBHOOK_PATH}")
     await init_db()
-    logger.info("Бот запущен и работает через Webhook")
+    
+    # Проверяем текущий webhook
+    webhook_info = await bot.get_webhook_info()
+    logger.info(f"Current webhook info: {webhook_info}")
+    
+    # Устанавливаем новый webhook
+    webhook_url = f"{WEBHOOK_URL}{WEBHOOK_PATH}"
+    logger.info(f"Setting webhook to: {webhook_url}")
+    
+    try:
+        await bot.set_webhook(
+            url=webhook_url,
+            drop_pending_updates=True
+        )
+        logger.info("Webhook successfully set")
+    except Exception as e:
+        logger.error(f"Failed to set webhook: {e}")
+        raise
 
 async def on_shutdown(bot: Bot) -> None:
-    logger.warning("Выключение бота...")
-    await bot.delete_webhook()
-    logger.warning("Бот выключен")
+    logger.warning("Shutting down...")
+    await bot.delete_webhook(drop_pending_updates=True)
+    logger.warning("Bot stopped")
 
 # --- Главный запуск ---
 async def main() -> None:
@@ -294,6 +308,8 @@ async def main() -> None:
     
     try:
         await web._run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
+    except Exception as e:
+        logger.error(f"Server error: {e}")
     finally:
         await bot.session.close()
 
