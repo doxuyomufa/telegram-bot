@@ -78,6 +78,7 @@ USDT | BTC | XMR | Карта України
 
 🛡 <b>ГАРАНТОВАНИЙ РЕЗУЛЬТАТ ТА ПОВНА БЕЗПЕКА!</b>
 
+👉 @victor_reserv001 - оператор
 👉 /start - головне меню
 👉 /military - зняття СЗЧ""",
         "image": "rozshuk.jpg"
@@ -112,6 +113,7 @@ USDT | BTC | XMR | Карта України
 
 🛡 <b>ГАРАНТОВАНИЙ РЕЗУЛЬТАТ ТА ПОВНА БЕЗПЕКА!</b>
 
+👉 @victor_reserv001 - оператор
 👉 /start - головне меню
 👉 /rozshuk - зняття з розшуку""",
         "image": "bron.jpg"
@@ -142,6 +144,7 @@ USDT | BTC | XMR | Карта України
 
 🛡 <b>ГАРАНТОВАНИЙ РЕЗУЛЬТАТ ТА ПОВНА БЕЗПЕКА!</b>
 
+👉 @victor_reserv001 - оператор
 👉 /start - головне меню
 👉 /military - виведення з ЗС""",
         "image": "vyezd.jpg"
@@ -175,6 +178,7 @@ USDT | BTC | XMR | Карта України
 
 🛡 <b>ГАРАНТОВАНИЙ РЕЗУЛЬТАТ ТА ПОВНА БЕЗПЕКА!</b>
 
+👉 @victor_reserv001 - оператор
 👉 /start - головне меню
 👉 /rozshuk - зняття з розшуку""",
         "image": "szch.jpg"
@@ -245,7 +249,7 @@ async def handle_service(message: types.Message, service_name: str):
             inline_keyboard=[[
                 InlineKeyboardButton(
                     text="🔷 ОТРИМАТИ КОНСУЛЬТАЦІЮ 🔷", 
-                    url="https://t.me/robic33ai"
+                    url="https://t.me/victor_reserv001"
                 )
             ]]
         )
