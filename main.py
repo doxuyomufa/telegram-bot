@@ -130,12 +130,12 @@ async def after_captcha(message: types.Message):
         await db.commit()
     await message.answer("Чудово, ви пройшли перевірку! Оберіть послугу:", reply_markup=main_menu)
 
-@dp.message(F.text.in_(intro_texts.keys()))
+@dp.message(F.text.in_(list(intro_texts.keys())))
 async def send_intro(message: types.Message):
     choice = message.text
     photo_path = images.get(choice)
 
-    if photo_path.exists():
+    if photo_path and photo_path.exists():
         with open(photo_path, "rb") as photo:
             await message.answer_photo(photo, caption=intro_texts[choice])
     else:
