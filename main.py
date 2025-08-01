@@ -10,7 +10,7 @@ from aiogram.types import (
     KeyboardButton,
     InlineKeyboardMarkup,
     InlineKeyboardButton,
-    InputFile
+    FSInputFile
 )
 
 # --- Конфигурация ---
@@ -31,29 +31,98 @@ main_menu = ReplyKeyboardMarkup(
     resize_keyboard=True,
 )
 
-# --- Тексты и изображения ---
-service_data = {
-    "Зняти з Розшуку": {
-        "intro": "✅ Зняття з розшуку на 1 рік з гарантією недоторканості",
-        "full": """**Послуги:**\n- Зняття з розшуку на 1 рік з гарантією\n- Оновлення дати ВЛК\n\n**Вартість:** від 4000 $\n\n**Етапи:**\n1. Перевірка даних\n2. Передоплата 50%\n3. Підтвердження в базах\n4. Доставка документів\n\n**Таймінг:** 3–10 днів\n\n**Оплата:** Криптовалюта або карта""",
-        "image": "rozshuk.jpg"
-    },
-    "Бронювання": {
-        "intro": "✅ Бронювання та відстрочка на 1 рік для тих, хто на обліку",
-        "full": """**Послуги:**\n- Бронювання та відстрочка на 1 рік\n- Можливість для тих, хто у розшуку\n\n**Вартість:** від 3000 $\n\n**Етапи:**\n1. Перевірка даних\n2. Передоплата 50%\n3. Підтвердження в базах\n4. Відправка документів\n\n**Таймінг:** 3–10 днів\n\n**Оплата:** Криптовалюта або карта""",
-        "image": "bron.jpg"
-    },
-    "Виїзд за кордон": {
-        "intro": "✅ Виключення з обліку на 5 років та можливість виїзду",
-        "full": """**Послуги:**\n- Виключення з обліку на 5 років\n- Отримання білого квитка\n\n**Вартість:** від 8000 $\n\n**Етапи:**\n1. Перевірка даних\n2. Передоплата 50%\n3. Зняття з обліку\n4. Відправка документів\n\n**Таймінг:** 10–20 днів\n\n**Оплата:** Криптовалюта або карта""",
-        "image": "vyezd.jpg"
-    },
-    "СЗЧ/Коміс": {
-        "intro": "✅ Зняття СЗЧ на 1 рік або звільнення зі служби",
-        "full": """**Послуги:**\n- Зняття СЗЧ на 1 рік\n- Звільнення за станом здоров'я\n\n**Вартість:** від 5000 $\n\n**Етапи:**\n1. Перевірка даних\n2. Передоплата 50%\n3. Підтвердження в базах\n4. Доставка документів\n\n**Таймінг:** 10–20 днів\n\n**Оплата:** Криптовалюта або карта""",
-        "image": "szch.jpg"
-    }
+# --- Краткие тексты ---
+intro_texts = {
+    "Зняти з Розшуку": "✅ Зняття з розшуку на 1 рік з гарантією недоторканості",
+    "Бронювання": "✅ Бронювання та відстрочка на 1 рік для тих, хто на обліку",
+    "Виїзд за кордон": "✅ Виключення з обліку на 5 років та можливість виїзду",
+    "СЗЧ/Коміс": "✅ Зняття СЗЧ на 1 рік або звільнення зі служби",
 }
+
+# --- Полные тексты ---
+full_texts = {
+    "Зняти з Розшуку": """**Послуги:**
+- Зняття з розшуку на 1 рік з гарантією недоторканості
+- Оновлення дати ВЛК
+
+**Вартість:** від 4000 $
+
+**Етапи:**
+1. Перевірка даних
+2. Передоплата 50%
+3. Зняття з розшуку, підтвердження в базах
+4. Доставка документів
+
+**Таймінг:** 3–10 днів
+
+**Оплата:** Криптовалюта або карта
+
+**Гарантії та відгуки:** надаються після перевірки клієнта""",
+    
+    "Бронювання": """**Послуги:**
+- Бронювання та відстрочка на 1 рік
+- Можливість для тих, хто у розшуку
+
+**Вартість:** від 3000 $
+
+**Етапи:**
+1. Перевірка даних
+2. Передоплата 50%
+3. Підтвердження в базах
+4. Відправка документів
+
+**Таймінг:** 3–10 днів
+
+**Оплата:** Криптовалюта або карта""",
+    
+    "Виїзд за кордон": """**Послуги:**
+- Виключення з обліку на 5 років
+- Отримання білого квитка
+
+**Вартість:** від 8000 $
+
+**Етапи:**
+1. Перевірка даних
+2. Передоплата 50%
+3. Зняття з обліку, перевірка в базах
+4. Відправка документів
+
+**Таймінг:** 10–20 днів
+
+**Оплата:** Криптовалюта або карта""",
+    
+    "СЗЧ/Коміс": """**Послуги:**
+- Зняття СЗЧ на 1 рік
+- Звільнення зі служби за станом здоров’я
+
+**Вартість:** від 5000 $
+
+**Етапи:**
+1. Перевірка даних
+2. Передоплата 50%
+3. Підтвердження в базах
+4. Доставка документів
+
+**Таймінг:** 10–20 днів
+
+**Оплата:** Криптовалюта або карта""",
+}
+
+# --- Изображения ---
+images = {
+    "Зняти з Розшуку": IMAGES_DIR / "rozshuk.jpg",
+    "Бронювання": IMAGES_DIR / "bron.jpg",
+    "Виїзд за кордон": IMAGES_DIR / "vyezd.jpg",
+    "СЗЧ/Коміс": IMAGES_DIR / "szch.jpg",
+}
+
+# --- Проверка наличия фото при старте ---
+def check_images():
+    for name, path in images.items():
+        if not path.exists():
+            logging.warning(f"⚠ Фото для '{name}' не найдено: {path}")
+        else:
+            logging.info(f"Фото для '{name}' найдено: {path}")
 
 # --- Обработчики ---
 @dp.message(Command("start"))
@@ -70,26 +139,21 @@ async def after_captcha(message: types.Message):
         await db.commit()
     await message.answer("Чудово, ви пройшли перевірку! Оберіть послугу:", reply_markup=main_menu)
 
-@dp.message(F.text.in_(service_data.keys()))
+@dp.message(F.text.in_(intro_texts.keys()))
 async def send_intro(message: types.Message):
-    service = message.text
-    data = service_data[service]
-    image_path = IMAGES_DIR / data["image"]
-    
-    try:
-        if image_path.exists():
-            photo = InputFile(image_path)
-            await message.answer_photo(photo, caption=data["intro"])
-        else:
-            await message.answer(data["intro"])
-    except Exception as e:
-        logging.error(f"Error sending photo: {e}")
-        await message.answer(data["intro"])
-    
+    choice = message.text
+    photo_path = images.get(choice)
+
+    if photo_path and photo_path.exists():
+        photo = FSInputFile(photo_path)
+        await message.answer_photo(photo, caption=intro_texts[choice])
+    else:
+        await message.answer(intro_texts[choice])
+
     details_keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text="Детальніше", callback_data=f"details_{service}"),
+                InlineKeyboardButton(text="Детальніше", callback_data=f"details_{choice}"),
                 InlineKeyboardButton(text="Консультація", url="https://t.me/robic33ai"),
             ]
         ]
@@ -98,19 +162,15 @@ async def send_intro(message: types.Message):
 
 @dp.callback_query(F.data.startswith("details_"))
 async def send_details(callback: types.CallbackQuery):
-    service = callback.data.replace("details_", "")
-    data = service_data.get(service)
-    
-    if data:
-        await callback.message.answer(data["full"], parse_mode="Markdown")
-        
-        consultation_button = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [InlineKeyboardButton(text="Консультація", url="https://t.me/robic33ai")]
-            ]
-        )
-        await callback.message.answer("Зв'яжіться з нами для консультації:", reply_markup=consultation_button)
-    
+    choice = callback.data.replace("details_", "")
+    await callback.message.answer(full_texts[choice])
+
+    consultation_button = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Консультація", url="https://t.me/robic33ai")]
+        ]
+    )
+    await callback.message.answer("Зв'яжіться з нами для консультації:", reply_markup=consultation_button)
     await callback.answer()
 
 # --- База данных ---
@@ -123,6 +183,7 @@ async def init_db():
 
 # --- Главный запуск ---
 async def main():
+    check_images()  # проверяем наличие всех картинок при запуске
     await init_db()
     await dp.start_polling(bot)
 
