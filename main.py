@@ -194,17 +194,26 @@ async def start(message: types.Message):
 
 @dp.message(F.text == "8")
 async def after_captcha(message: types.Message):
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute(
-            "INSERT OR IGNORE INTO users (id, username, interactions) VALUES (?, ?, 0)",
-            (message.from_user.id, message.from_user.username),
-        )
-        await db.commit()
-    await message.answer("Чудово, ви пройшли перевірку! Оберіть послугу:", reply_markup=main_menu)
+    try:
+        async with aiosqlite.connect(DB_PATH) as db:
+            await db.execute(
+                "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, interactions INT)"
+            )
+            await db.execute(
+                "INSERT OR IGNORE INTO users (id, username, interactions) VALUES (?, ?, 0)",
+                (message.from_user.id, message.from_user.username),
+            )
+            await db.commit()
+        await message.answer("Чудово, ви пройшли перевірку! Оберіть послугу:", reply_markup=main_menu)
+    except Exception as e:
+        logger.error(f"Database error: {e}")
+        await message.answer("Сталася помилка. Спробуйте ще раз /start")
 
 async def send_service_info(message: types.Message, service_name: str):
-    service = service_texts[service_name]
-    photo_path = IMAGES_DIR / service["image"]
+    service = service_texts.get(service_name)
+    if not service:
+        await message.answer("Послуга не знайдена")
+        return
     
     # Отправляем текст
     await message.answer(
@@ -214,6 +223,7 @@ async def send_service_info(message: types.Message, service_name: str):
     )
     
     # Отправляем фото, если оно существует
+    photo_path = IMAGES_DIR / service["image"]
     if photo_path.exists():
         try:
             photo = FSInputFile(photo_path)
@@ -259,25 +269,28 @@ async def handle_szch(message: types.Message):
 
 # --- База данных ---
 async def init_db():
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute(
-            "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, interactions INT)"
-        )
-        await db.commit()
+    try:
+        async with aiosqlite.connect(DB_PATH) as db:
+            await db.execute(
+                "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, interactions INT)"
+            )
+            await db.commit()
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
 
 # --- Webhook настройки ---
 async def on_startup(bot: Bot) -> None:
     await init_db()
     
     # Проверяем текущий webhook
-    webhook_info = await bot.get_webhook_info()
-    logger.info(f"Current webhook info: {webhook_info}")
-    
-    # Устанавливаем новый webhook
-    webhook_url = f"{WEBHOOK_URL}{WEBHOOK_PATH}"
-    logger.info(f"Setting webhook to: {webhook_url}")
-    
     try:
+        webhook_info = await bot.get_webhook_info()
+        logger.info(f"Current webhook info: {webhook_info}")
+        
+        # Устанавливаем новый webhook
+        webhook_url = f"{WEBHOOK_URL}{WEBHOOK_PATH}"
+        logger.info(f"Setting webhook to: {webhook_url}")
+        
         await bot.set_webhook(
             url=webhook_url,
             drop_pending_updates=True
@@ -289,7 +302,11 @@ async def on_startup(bot: Bot) -> None:
 
 async def on_shutdown(bot: Bot) -> None:
     logger.warning("Shutting down...")
-    await bot.delete_webhook(drop_pending_updates=True)
+    try:
+        await bot.delete_webhook(drop_pending_updates=True)
+        logger.warning("Webhook removed")
+    except Exception as e:
+        logger.error(f"Error removing webhook: {e}")
     logger.warning("Bot stopped")
 
 # --- Главный запуск ---
