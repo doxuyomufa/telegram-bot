@@ -26,7 +26,7 @@ IMAGES_DIR = Path("images")
 WEBHOOK_PATH = "/webhook"
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 WEB_SERVER_HOST = "0.0.0.0"
-WEB_SERVER_PORT = int(os.getenv("PORT", 8000))
+WEB_SERVER_PORT = int(os.getenv("PORT", 10000))
 
 if not WEBHOOK_URL:
     raise ValueError("Не указан WEBHOOK_URL в переменных окружения")
